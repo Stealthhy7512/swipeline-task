@@ -1,4 +1,3 @@
-# Swipeline Internship Task
+# Swipeline AI Studio Internship Task
 
-## Kaan Yazici
-
+## Created by Kaan Yazici
