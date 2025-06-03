@@ -1,6 +1,8 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { z } from 'zod';
+import { google } from 'googleapis'
+import { GoogleAuth } from 'google-auth-library';
 
 const structure = z.object({
   content: z.string().describe('Whole content of the tweet.'),
@@ -13,7 +15,7 @@ const structure = z.object({
 const model = new ChatGoogleGenerativeAI({
   model: 'gemini-2.0-flash',
   temperature: 0,
-  apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
+  apiKey: process.env.GOOGLE_API_KEY,
 }).withStructuredOutput(structure)
 
 const systemTemplate =
@@ -29,6 +31,46 @@ function parseTweetId(url: string) {
   if (match) {
     return match[1]
   }
+}
+
+export async function appendToSheet(values: any[][]) {
+  const auth = new GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS!),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+  const client = await auth.getClient()
+  const sheets = google.sheets({ version: 'v4', auth })
+  const spreadsheetId = process.env.SPREADSHEET_ID
+  const range = 'Sheet1!A:E'
+
+  const req = {
+    spreadsheetId,
+    range,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: {
+      values,
+    },
+    auth: client,
+  }
+  try {
+    const res = await sheets.spreadsheets.values.append(req)
+    return res.data
+  } catch (err) {
+    console.error('Error.')
+    throw err
+  }
+}
+
+export async function saveAnalysisToSheet(result: any) {
+  const values = [[
+    result.content,
+    result.summary,
+    result.sentiment,
+    result.user,
+    result.timestamp,
+  ]]
+  await appendToSheet(values)
 }
 
 export async function handlePrompt(url: string) {
