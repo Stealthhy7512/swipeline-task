@@ -2,8 +2,8 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { z } from 'zod';
 import { google } from 'googleapis'
 import { GoogleAuth, OAuth2Client } from 'google-auth-library';
-import { initChatModel} from 'langchain/chat_models/universal';
 import { ChatOpenAI } from '@langchain/openai'
+import { ChatGoogleGenerativeAI} from '@langchain/google-genai';
 
 const structure = z.object({
   content: z.string().describe('Whole content of the tweet.'),
@@ -13,18 +13,19 @@ const structure = z.object({
   timestamp: z.string().describe('Date and time of the post.'),
 })
 
-const model = new ChatOpenAI({
-  model: 'gpt-4o-mini',
-  temperature: 0,
-  apiKey: process.env.OPENAI_API_KEY,
-}).withStructuredOutput(structure)
+// OpenAI Model
+// const model = new ChatOpenAI({
+//   model: 'gpt-4o-mini',
+//   temperature: 0,
+//   apiKey: process.env.OPENAI_API_KEY,
+// }).withStructuredOutput(structure)
 
-// const model = (await initChatModel(
-//   "gpt-4o-mini",
-//   {
-//     modelProvider: "openai",
-//   }
-// )).withStructuredOutput(structure)
+// Gemini model
+const model = new ChatGoogleGenerativeAI({
+  model: 'gemini-2.0-flash',
+  temperature: 0,
+  apiKey: process.env.GOOGLE_API_KEY,
+}).withStructuredOutput(structure)
 
 const systemTemplate =
   'You will analyse a given tweet\'s content. Return\n' +
@@ -39,7 +40,7 @@ function parseTweetId(url: string) {
   if (match) {
     return match[1]
   } else {
-    return null
+    throw new Error('Invalid Twitter URL.')
   }
 }
 
@@ -84,7 +85,7 @@ export async function saveAnalysisToSheet(result: any) {
 }
 
 export async function handlePrompt(url: string) {
-  const id = parseTweetId(url);
+  const id = parseTweetId(url)
 
   const res = await fetch(
     `https://api.twitter.com/2/tweets/${id}?tweet.fields=created_at&expansions=author_id&user.fields=username`, {

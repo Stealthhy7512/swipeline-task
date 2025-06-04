@@ -2,10 +2,10 @@
 
 ## Created by Kaan Yazici
 
-A simple Tweet analyzer tool written in Next.js. Used OpenAI as main prompting tool.
+A simple Tweet analyzer tool written in *Next.js*. Used *Google Gemini* as main prompting tool.
 
 ### How it works?
-1. A *Twitter* / *X* compliant URL is entered to the input field. A simple Zod validator checks if its a valid URL. 
+1. A *Twitter* / *X* compliant URL is entered to the input field. A simple `Zod` validator checks if its a valid URL. 
 2. Then that URL is parsed for its *tweet id* only if it's of correct format. A regex matcher checks for a valid 
 *Twitter* URL.
 3. Then, through `Twitter API`, Tweet contents are pulled.
