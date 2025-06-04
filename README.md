@@ -21,6 +21,11 @@ return value is appended to a `Google Sheets` sheet with order:
 | Content | Summary | Sentimental Analysis | Username | Timestamp         |
 |---------|---------|----------------------|----------|-------------------|
 
+Example successful client:
+![Client](public/client.png)
+Example sheet:
+![Sheet](public/sheet.png)
+
 
 
 ### Basic Usage
