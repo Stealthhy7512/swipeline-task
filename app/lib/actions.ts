@@ -38,6 +38,8 @@ function parseTweetId(url: string) {
   const match = url.match(/status\/(\d+)/)
   if (match) {
     return match[1]
+  } else {
+    return null
   }
 }
 
