@@ -21,17 +21,19 @@ export default function Home() {
       return
     }
 
-    try {
-      const res = await fetch('/api/prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: validatedUrl.data}),
-      })
-      setData(await res.json())
+    const res = await fetch('/api/prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: validatedUrl.data}),
+    })
+    if (res.ok) {
+      const json = await res.json()
+      setData(json.analyzedPrompt)
       toast.success('Analyzed prompt successfully retrieved.')
-    } catch(err: any) {
-      toast.error(err.message)
+    } else {
+      toast.error('Error retrieving analyzed prompt.')
     }
+
   }
 
   return (
