@@ -1,8 +1,9 @@
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { z } from 'zod';
 import { google } from 'googleapis'
-import { GoogleAuth } from 'google-auth-library';
+import { GoogleAuth, OAuth2Client } from 'google-auth-library';
+import { initChatModel} from 'langchain/chat_models/universal';
+import { ChatOpenAI } from '@langchain/openai'
 
 const structure = z.object({
   content: z.string().describe('Whole content of the tweet.'),
@@ -12,11 +13,18 @@ const structure = z.object({
   timestamp: z.string().describe('Date and time of the post.'),
 })
 
-const model = new ChatGoogleGenerativeAI({
-  model: 'gemini-2.0-flash',
+const model = new ChatOpenAI({
+  model: 'gpt-4o-mini',
   temperature: 0,
-  apiKey: process.env.GOOGLE_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 }).withStructuredOutput(structure)
+
+// const model = (await initChatModel(
+//   "gpt-4o-mini",
+//   {
+//     modelProvider: "openai",
+//   }
+// )).withStructuredOutput(structure)
 
 const systemTemplate =
   'You will analyse a given tweet\'s content. Return\n' +
@@ -39,7 +47,9 @@ export async function appendToSheet(values: any[][]) {
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   })
   const client = await auth.getClient()
-  const sheets = google.sheets({ version: 'v4', auth })
+  google.options({ auth: client as OAuth2Client });
+
+  const sheets = google.sheets('v4')
   const spreadsheetId = process.env.SPREADSHEET_ID
   const range = 'Sheet1!A:E'
 
@@ -48,16 +58,14 @@ export async function appendToSheet(values: any[][]) {
     range,
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
-    requestBody: {
-      values,
-    },
-    auth: client,
+    requestBody: { values },
   }
   try {
     const res = await sheets.spreadsheets.values.append(req)
-    return res.data
+    console.log(`${res.data.updates?.updatedCells} cells appended.`)
+    return res
   } catch (err) {
-    console.error('Error.')
+    console.error(err)
     throw err
   }
 }
@@ -85,7 +93,9 @@ export async function handlePrompt(url: string) {
     }
   )
   if (!res.ok) {
-    throw new Error()
+    const errorText = await res.text();
+    console.log('Twitter API error response:', errorText);
+    throw new Error(`Twitter API request failed with status ${res.status}`);
   }
 
   const tweetData = await res.json()

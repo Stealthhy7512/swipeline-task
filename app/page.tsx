@@ -8,7 +8,6 @@ import { toast } from "sonner"
 
 export default function Home() {
   const [url, setUrl] = useState('')
-  const [result, setResult] = useState(null)
 
   const urlSchema = z.string().url()
 
@@ -25,8 +24,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: validatedUrl.data}),
       })
-      const data = await res.json()
-      setResult(data)
+
     } catch(err: any) {
       toast.error(err.message)
     }
