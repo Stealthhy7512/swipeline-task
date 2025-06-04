@@ -35,7 +35,9 @@ pnpm dev
 # or 
 npm run dev
 ```
-- Create `.env` file and add necessary API keys such as LLM, Twitter, 
+- Create `.env` file and add necessary API keys for, such as, LLM, Twitter, 
 Spreadsheet ID, etc.
 
+[Link](https://docs.google.com/spreadsheets/d/1gOdg2cGRELPxkCIuth3ZEKh93qgDnMs_9w7vSwxDSgY/edit?gid=0#gid=0) to 
+Google Sheets sheet (read-only).
 
